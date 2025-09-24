@@ -1,0 +1,93 @@
+
+############################################################
+# 全局随机种子，用于保证实验可重复性（整型）
+seed: 123
+
+# 运行设备："cuda"（GPU）、"mps"（Apple Metal）或 "cpu"（CPU）。
+# 注意：如果选择的后端不可用，程序会回退到 CPU 并打印提示。
+device: "cuda"
+
+# 几何体设置："sphere" 或 "torus"。
+geometry: "sphere"
+
+
+
+# 激活函数的阶数 k（使用 ReLU^{k-1}），必须 >= 2。
+# 例如 k=3 对应激活 σ(t)=ReLU(t)^{2}。增加 k 会改变网络的平滑性。
+activation_k: 5
+
+# 是否对 ReLU^{k-1} 激活做方差归一化（保持与标准 ReLU 相同的二次矩）。
+activation_normalize: true
+
+# 方差归一化的目标二次矩，默认 0.5（对应标准 ReLU）。设为 null 可禁用缩放调节幅度。
+activation_target_variance: 0.5
+
+# 是否在每个隐藏线性层后应用 LayerNorm，以稳定更深的高阶 ReLU 网络训练。
+activation_layer_norm: false
+
+# 激活在取幂前的最大值（ReLU 输出上界），用于抑制高阶幂产生的巨梯度；设为 null 关闭。
+activation_clamp_max: null
+
+# MLP 宽度（隐藏层神经元数）和深度（层数）：决定网络容量。
+# width: 256
+# depth: 2
+layer_widths: [192, 192, 192]
+layer_activation_k: [6, 3, 3]
+# 权重裁剪范围（绝对值上限），用于数值稳定或隐式正则化。
+# 如果不想裁剪可以设置为 null（或在代码中改为 None）。
+weight_clip: null
+# 学习率，用于优化器 Adam。通常在 1e-4 ~ 1e-2 之间尝试。
+lr: 4e-4
+
+# 梯度裁剪阈值（L2 范数）。可在高阶激活/深网络时抑制梯度爆炸；设为 null 关闭。
+grad_clip_norm: null
+
+# 训练时每次迭代采样的批大小（min(batch_size, samples) 会被使用）。
+batch_size: 1024
+
+# 总训练步数（迭代次数）。建议先用少量步数做调试。
+steps: 8000
+
+# 用于近似积分/训练的球面采样点总数（全局样本集大小）。
+samples: 10000
+
+# 近似的阶数 s_order：控制损失中包含的导数项
+# 0 -> 仅匹配函数值
+# 1 -> 匹配函数值与切向梯度
+# 2 -> 匹配函数值、切向梯度，并用 Laplace–Beltrami 作为二阶信息
+s_order: 0
+value_weight: 1.0
+grad_weight: 0.0
+laplace_weight: 0.0
+
+# 任务类型：
+# "approx" - 拟合目标函数及其导数（根据 s_order）
+# "poisson" - 求解球面上的 Poisson 方程 Δ_S u = h（使用残差最小化，并加 mean-zero 约束）
+task: "approx"
+
+# 目标函数选择（可在命令行通过 --target 覆盖，例如 --target sph_l_3）：
+# - "linear"       : 线性目标 f(x)=a·x（l=1 谐波）
+# - "quad"         : 二次去迹目标（l=2 谐波成分）
+# - "l1_plus_l2"   : 线性 + 二次去迹 的组合
+# - "sph_l_N"      : 指定 zonal 球谐 Y_N^0（例如 "sph_l_3" 表示 l=3），适合需要至少 3 阶球谐的场景
+# - "torus_fourier": 环面上的 Fourier 模式（u,v）=(mode_u, mode_v) 的线性组合
+target: "sph_l_3"
+
+torus_R: 2
+torus_r: 1
+torus_mode_u: 3
+torus_mode_v: 2
+torus_amp_u: 0.15
+torus_amp_v: 0.15
+
+
+# 日志保存间隔（训练步数），用于打印/保存学习曲线等
+log_interval: 100
+
+# 是否在训练过程中保存当前最优模型 (基于记录的训练损失最小值)
+# 在某些调试/快速实验中可以设置为 false 以减少磁盘写入
+save_best: true
+
+############################################################
+out_dir: results/mixed_k6_base
+

@@ -1,0 +1,88 @@
+###########################################################
+# Width sweep configuration (all experiment params)
+#
+# This file supplies the base experiment configuration for the
+# width sweep. The sweep will iterate over the widths specified
+# by `widths` or `widths_list`. All other parameters below are
+# used as the common base config for each run.
+###########################################################
+
+# Global random seed for reproducibility
+seed: 123
+
+device: "cpu"
+
+# activation order k (sweep won't touch this unless you set it)
+activation_k: 6
+
+# Whether to variance-normalize ReLU^{k-1} so it matches standard ReLU second moment
+activation_normalize: true
+
+# Target second moment for variance normalization; set to null to disable rescaling
+activation_target_variance: 0.5
+
+# Apply LayerNorm after each hidden linear layer to stabilize higher-order ReLU networks
+activation_layer_norm: true
+
+# Clamp activation before raising to power; set to null to disable
+activation_clamp_max: null
+
+# Default model width and depth (sweep will override width)
+width: 209
+depth: 2
+
+# Weight clipping range (absolute value). Set to null to disable
+weight_clip: null
+
+# Gradient clipping threshold (L2 norm). Set to null to disable
+grad_clip_norm: 1.0
+
+lr: 1.0e-3
+
+batch_size: 2024
+
+steps: 5000
+
+samples: 20000
+
+s_order: 0
+value_weight: 1.0
+grad_weight: 0.0
+laplace_weight: 0.0
+
+task: "approx"
+
+# 指定实验几何体："sphere" 或 "torus"
+geometry: "torus"
+
+# 环面目标函数（具有解析 Laplace 表达式）
+target: "torus_fourier"
+
+# 环面几何与 Fourier 模式参数
+torus_R: 2
+torus_r: 1
+torus_mode_u: 3
+torus_mode_v: 2  
+torus_amp_u: 0.15
+torus_amp_v: 0.15
+
+# 输入仍嵌入在 R^3 中
+ambient_dim: 3
+
+log_interval: 100
+
+save_best: true
+
+# Width sweep specification (choose ONE of the following)
+# - widths: "64,128,256"      (comma separated)
+# - widths_list: [64,128,256]
+widths: [16, 32, 64, 96, 128, 256]
+#widths_list: [64,128,256]
+# [16, 32, 64, 96, 128, 256]
+# Evaluation samples used after each run
+eval_samples: 2048
+
+# Number of random restarts per width for aggregation
+repeats: 5
+
+############################################################
